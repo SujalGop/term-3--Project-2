@@ -1,0 +1,81 @@
+/* ── Google Fonts ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Tailwind Directives ──────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ────────────────────────────────── */
+:root {
+  /* Glassmorphism tokens */
+  --glass-bg:      rgba(255, 255, 255, 0.06);
+  --glass-bg-2:    rgba(255, 255, 255, 0.10);
+  --glass-border:  rgba(255, 255, 255, 0.12);
+  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.37);
+  --glass-blur:    12px;
+
+  /* App shell */
+  --sidebar-width: 260px;
+}
+
+/* ── Base Resets ──────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply font-sans text-slate-100 antialiased;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full bg-surface-700; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-surface-600; }
+}
+
+/* ── Glassmorphism Utility Classes ───────────────────────── */
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-hover {
+    @apply transition-all duration-200;
+  }
+  .glass-hover:hover {
+    background: var(--glass-bg-2);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl p-6;
+  }
+
+  /* Sidebar active link */
+  .nav-link-active {
+    @apply bg-primary-600/30 text-primary-300 border-l-2 border-primary-400;
+  }
+
+  /* Form inputs */
+  .form-input {
+    @apply w-full rounded-xl px-4 py-2.5 text-sm text-slate-100
+           bg-white/5 border border-white/10
+           placeholder-slate-500
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50
+           transition duration-150;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}
