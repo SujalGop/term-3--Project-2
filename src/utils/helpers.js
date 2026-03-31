@@ -1,20 +1,25 @@
+import { format, isPast as dfIsPast, differenceInCalendarDays } from 'date-fns';
+
 // Format an ISO date string to a human-readable date (e.g. "Mar 25, 2026")
+// Passes optional Intl options (e.g. { weekday: 'long' }) for richer formatting
 export function formatDate(isoString, options = {}) {
   if (!isoString) return '—';
-  return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', ...options }).format(new Date(isoString));
+  if (Object.keys(options).length > 0) {
+    return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', ...options }).format(new Date(isoString));
+  }
+  return format(new Date(isoString), 'MMM d, yyyy');
 }
 
 // Returns true if the given ISO date string is in the past
 export function isPast(isoString) {
   if (!isoString) return false;
-  return new Date(isoString) < new Date();
+  return dfIsPast(new Date(isoString));
 }
 
 // Days remaining until due date (negative = overdue)
 export function daysUntil(isoString) {
   if (!isoString) return null;
-  const diff = new Date(isoString).setHours(0,0,0,0) - new Date().setHours(0,0,0,0);
-  return Math.round(diff / 86_400_000);
+  return differenceInCalendarDays(new Date(isoString), new Date());
 }
 
 // Truncate a string and append ellipsis if it exceeds maxLength
@@ -85,7 +90,7 @@ export function filterTasks(tasks = [], subjects = [], topics = [], query = '', 
 
     if (deadline && deadline !== 'all') {
       if (!task.dueDate) return false;
-      const days = Math.round((new Date(task.dueDate).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / 86_400_000);
+      const days = differenceInCalendarDays(new Date(task.dueDate), new Date());
       if (deadline === 'overdue'  && days >= 0) return false;
       if (deadline === 'today'    && days !== 0) return false;
       if (deadline === 'upcoming' && days <= 0)  return false;

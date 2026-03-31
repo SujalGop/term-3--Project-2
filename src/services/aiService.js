@@ -1,14 +1,13 @@
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+import axios from 'axios';
+
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
+
+// axios instance with a base content-type header for all Gemini requests
+const gemini = axios.create({ baseURL: GEMINI_API_URL, headers: { 'Content-Type': 'application/json' } });
 
 async function askGemini(prompt) {
-  const response = await fetch(GEMINI_API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  });
-  const data = await response.json();
-  if (!response.ok || !data.candidates) throw new Error(data.error?.message || 'Unknown API error');
+  const { data } = await gemini.post('', { contents: [{ parts: [{ text: prompt }] }] });
+  if (!data.candidates) throw new Error('No candidates returned from Gemini API');
   return data.candidates[0].content.parts[0].text;
 }
 
