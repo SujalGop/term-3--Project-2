@@ -1,17 +1,3 @@
-/**
- * Button.jsx
- * Styled button component with multiple variants.
- *
- * Variants:
- *   primary  – indigo gradient (default)
- *   success  – emerald, for completed/positive actions
- *   danger   – red, for destructive actions
- *   ghost    – transparent with border
- *   outline  – transparent with primary border
- *
- * Sizes: sm | md (default) | lg
- */
-
 import { motion } from 'framer-motion';
 
 const VARIANT_CLASSES = {
@@ -40,9 +26,6 @@ export default function Button({
   onClick,
   ...props
 }) {
-  const variantCls = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.primary;
-  const sizeCls    = SIZE_CLASSES[size]    ?? SIZE_CLASSES.md;
-
   return (
     <motion.button
       type={type}
@@ -53,7 +36,9 @@ export default function Button({
         inline-flex items-center justify-center font-medium
         transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/50
         disabled:opacity-40 disabled:cursor-not-allowed
-        ${variantCls} ${sizeCls} ${className}
+        ${VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.primary}
+        ${SIZE_CLASSES[size] ?? SIZE_CLASSES.md}
+        ${className}
       `}
       {...props}
     >

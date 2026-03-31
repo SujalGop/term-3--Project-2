@@ -1,20 +1,3 @@
-/**
- * App.jsx
- * ─────────────────────────────────────────────────────────────────────────────
- * Root application component.
- *
- * Routing tree:
- *   /             → redirect → /dashboard
- *   /dashboard    → Dashboard
- *   /subjects     → Subjects
- *   /tasks        → Tasks
- *   /revision     → Revision
- *   /ai-tools     → AITools
- *
- * All routes share a common Layout (Sidebar + main area).
- * The entire tree is wrapped in StudyProvider.
- */
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -32,10 +15,7 @@ export default function App() {
       <BrowserRouter>
         <ToastContainer position="bottom-right" theme="dark" />
         <Routes>
-          {/* Default redirect */}
           <Route index element={<Navigate to="/dashboard" replace />} />
-
-          {/* Shared layout wrapper */}
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/subjects"  element={<Subjects />}  />
@@ -43,8 +23,6 @@ export default function App() {
             <Route path="/revision"  element={<Revision />}  />
             <Route path="/ai-tools"  element={<AITools />}   />
           </Route>
-
-          {/* Catch-all: redirect unknown paths back to dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>

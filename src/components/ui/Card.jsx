@@ -1,26 +1,7 @@
-/**
- * Card.jsx
- * Glassmorphism card component.
- *
- * Props:
- *   children   – content
- *   className  – additional Tailwind classes
- *   hover      – bool, enable hover effect (default: false)
- *   as         – element type (default: 'div')
- *   onClick    – click handler
- */
-
 import { motion } from 'framer-motion';
 
-export default function Card({
-  children,
-  className = '',
-  hover = false,
-  as: Tag = 'div',
-  onClick,
-  animate = true,
-  ...props
-}) {
+// Glassmorphism card with optional entry animation and hover effect
+export default function Card({ children, className = '', hover = false, as: Tag = 'div', onClick, animate = true, ...props }) {
   const base = `glass rounded-2xl p-6 ${hover ? 'glass-hover cursor-pointer' : ''} ${className}`;
 
   if (animate) {
@@ -38,9 +19,5 @@ export default function Card({
     );
   }
 
-  return (
-    <Tag className={base} onClick={onClick} {...props}>
-      {children}
-    </Tag>
-  );
+  return <Tag className={base} onClick={onClick} {...props}>{children}</Tag>;
 }

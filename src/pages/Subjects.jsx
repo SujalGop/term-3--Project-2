@@ -1,14 +1,9 @@
-/**
- * Subjects.jsx
- * Browse and manage study subjects and their topics.
- */
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { RiAddLine, RiDeleteBin6Line, RiBookOpenLine } from 'react-icons/ri';
+import { RiAddLine, RiBookOpenLine } from 'react-icons/ri';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useStudy } from '../context/StudyContext';
@@ -24,50 +19,41 @@ const subjectSchema = yup.object({
 });
 
 const topicSchema = yup.object({
-  title: yup.string().required('Topic title is required').min(2, 'Too short'),
-  difficulty: yup.string().oneOf(['Easy', 'Medium', 'Hard']).required(),
-  status: yup.string().oneOf(['Not Started', 'In Progress', 'Completed', 'Needs Revision']).required(),
+  title:            yup.string().required('Topic title is required').min(2, 'Too short'),
+  difficulty:       yup.string().oneOf(['Easy', 'Medium', 'Hard']).required(),
+  status:           yup.string().oneOf(['Not Started', 'In Progress', 'Completed', 'Needs Revision']).required(),
   nextRevisionDate: yup.string(),
-  notes: yup.mixed().optional()
+  notes:            yup.mixed().optional(),
 });
 
 const PRESET_COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316'];
+
+const slideAnim = { initial: { opacity: 0, height: 0 }, animate: { opacity: 1, height: 'auto' }, exit: { opacity: 0, height: 0 }, transition: { duration: 0.25 } };
 
 export default function Subjects() {
   const { subjects, actions } = useStudy();
   const { progressBySubject } = useProgress();
   const { topics, addTopic, deleteTopic, updateTopicStatus } = useTopics();
-  
+
   const [showSubjectForm, setShowSubjectForm] = useState(false);
   const [activeSubjectId, setActiveSubjectId] = useState(null);
-  const [showTopicForm, setShowTopicForm] = useState(false);
+  const [showTopicForm, setShowTopicForm]     = useState(false);
 
-  // Form for Subjects
   const { register: registerSubject, handleSubmit: handleSubmitSubject, reset: resetSubject, watch: watchSubject, setValue: setValueSubject, formState: { errors: subjectErrors } } = useForm({
     resolver: yupResolver(subjectSchema),
     defaultValues: { name: '', icon: '📚', color: '#6366f1' },
   });
   const selectedColor = watchSubject('color');
 
-  // Form for Topics
   const { register: registerTopic, handleSubmit: handleSubmitTopic, reset: resetTopic, formState: { errors: topicErrors } } = useForm({
     resolver: yupResolver(topicSchema),
     defaultValues: { title: '', difficulty: 'Medium', status: 'Not Started', nextRevisionDate: '', notes: [] },
   });
 
-  const onSubjectSubmit = (data) => {
-    actions.addSubject(data);
-    resetSubject();
-    setShowSubjectForm(false);
-  };
+  const onSubjectSubmit = (data) => { actions.addSubject(data); resetSubject(); setShowSubjectForm(false); };
+  const onTopicSubmit   = (data) => { addTopic({ subjectId: activeSubjectId, ...data }); resetTopic(); setShowTopicForm(false); };
 
-  const onTopicSubmit = (data) => {
-    addTopic({ subjectId: activeSubjectId, ...data });
-    resetTopic();
-    setShowTopicForm(false);
-  };
-
-  const progressMap = Object.fromEntries(progressBySubject.map(p => [p.subjectId, p]));
+  const progressMap         = Object.fromEntries(progressBySubject.map(p => [p.subjectId, p]));
   const activeSubjectTopics = topics.filter(t => t.subjectId === activeSubjectId);
 
   return (
@@ -78,20 +64,13 @@ export default function Subjects() {
           <h2 className="text-2xl font-bold text-white">Subjects</h2>
           <p className="text-surface-400 text-sm mt-0.5">{subjects.length} subjects tracked</p>
         </div>
-        <Button icon={RiAddLine} onClick={() => setShowSubjectForm(v => !v)}>
-          Add Subject
-        </Button>
+        <Button icon={RiAddLine} onClick={() => setShowSubjectForm(v => !v)}>Add Subject</Button>
       </div>
 
-      {/* Add Subject Form */}
+      {/* Add Subject form */}
       <AnimatePresence>
         {showSubjectForm && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-          >
+          <motion.div {...slideAnim}>
             <Card animate={false} className="overflow-hidden">
               <h3 className="text-sm font-semibold text-white mb-4">New Subject</h3>
               <form onSubmit={handleSubmitSubject(onSubjectSubmit)} className="space-y-4">
@@ -110,12 +89,7 @@ export default function Subjects() {
                   <label className="text-xs text-surface-400 font-medium block mb-2">Color</label>
                   <div className="flex gap-2 flex-wrap">
                     {PRESET_COLORS.map(c => (
-                      <button
-                        key={c} type="button"
-                        onClick={() => setValueSubject('color', c)}
-                        className={`w-7 h-7 rounded-full border-2 transition-all ${selectedColor === c ? 'border-white scale-110' : 'border-transparent'}`}
-                        style={{ backgroundColor: c }}
-                      />
+                      <button key={c} type="button" onClick={() => setValueSubject('color', c)} className={`w-7 h-7 rounded-full border-2 transition-all ${selectedColor === c ? 'border-white scale-110' : 'border-transparent'}`} style={{ backgroundColor: c }} />
                     ))}
                   </div>
                 </div>
@@ -129,24 +103,19 @@ export default function Subjects() {
         )}
       </AnimatePresence>
 
-      {/* Subjects Grid */}
+      {/* Subjects grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence>
           {subjects.map((subject) => {
-            const progress = progressMap[subject.id];
-            const subjectTopics = topics.filter(t => t.subjectId === subject.id);
-            const completedCount = subjectTopics.filter(t => t.status === 'Completed').length;
-            
+            const subjectTopics     = topics.filter(t => t.subjectId === subject.id);
+            const completedCount    = subjectTopics.filter(t => t.status === 'Completed').length;
             return (
               <SubjectCard
                 key={subject.id}
                 subject={subject}
-                progress={progress}
+                progress={progressMap[subject.id]}
                 active={activeSubjectId === subject.id}
-                onClick={() => {
-                  setActiveSubjectId(subject.id === activeSubjectId ? null : subject.id);
-                  setShowTopicForm(false);
-                }}
+                onClick={() => { setActiveSubjectId(subject.id === activeSubjectId ? null : subject.id); setShowTopicForm(false); }}
                 onDelete={actions.deleteSubject}
                 topicsCount={subjectTopics.length}
                 completedTopicsCount={completedCount}
@@ -156,37 +125,22 @@ export default function Subjects() {
         </AnimatePresence>
       </div>
 
-      {/* Active Subject Topics Panel */}
+      {/* Topics panel for active subject */}
       <AnimatePresence>
         {activeSubjectId && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden pt-4 border-t border-surface-700/50 mt-8"
-          >
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden pt-4 border-t border-surface-700/50 mt-8">
             <div className="flex items-center justify-between mb-6 mt-4">
-              <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <RiBookOpenLine className="text-primary-400" /> 
-                  Topics for {subjects.find(s => s.id === activeSubjectId)?.name}
-                </h3>
-              </div>
-              <Button icon={RiAddLine} onClick={() => setShowTopicForm(v => !v)}>
-                Add Topic
-              </Button>
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <RiBookOpenLine className="text-primary-400" />
+                Topics for {subjects.find(s => s.id === activeSubjectId)?.name}
+              </h3>
+              <Button icon={RiAddLine} onClick={() => setShowTopicForm(v => !v)}>Add Topic</Button>
             </div>
 
-            {/* Add Topic Form */}
+            {/* Add Topic form */}
             <AnimatePresence>
               {showTopicForm && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="mb-6"
-                >
+                <motion.div {...slideAnim} className="mb-6">
                   <Card animate={false} className="border border-surface-700/50">
                     <h3 className="text-sm font-semibold text-white mb-4">New Topic</h3>
                     <form onSubmit={handleSubmitTopic(onTopicSubmit)} className="space-y-4">
@@ -228,28 +182,17 @@ export default function Subjects() {
               )}
             </AnimatePresence>
 
-            {/* Topics Items */}
+            {/* Topics grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
               <AnimatePresence>
                 {activeSubjectTopics.map(topic => (
-                  <motion.div
-                    key={topic.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                  >
-                    <TopicCard 
-                      topic={topic}
-                      onDelete={deleteTopic}
-                      onStatusChange={updateTopicStatus}
-                      onUpdate={actions.updateTopic}
-                    />
+                  <motion.div key={topic.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}>
+                    <TopicCard topic={topic} onDelete={deleteTopic} onStatusChange={updateTopicStatus} onUpdate={actions.updateTopic} />
                   </motion.div>
                 ))}
               </AnimatePresence>
             </div>
-            
+
             {activeSubjectTopics.length === 0 && !showTopicForm && (
               <div className="text-center bg-surface-800/50 py-10 rounded-xl border border-dashed border-surface-700">
                 <p className="text-surface-400 text-sm">No topics found for this subject.</p>
